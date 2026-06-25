@@ -1,5 +1,7 @@
 #include <Trade/Trade.mqh>
 
+#define HEARTBEAT_NAME "EA_Alive"
+
 // ===== INPUT =====
 input double RiskUSD = 100.0;
 input double RR = 2.35;
@@ -27,7 +29,7 @@ input double BE_Trigger = 0.7;
 // ===== Telegram credential =====
 input string BotToken = "";
 input string ChatID   = "";
-input string AccountName = "";
+input string AccountName = "Unknown";
 
 // ===== GLOBAL =====
 int atrHandle;
@@ -37,6 +39,21 @@ double atrBuffer[];
 double rsiBuffer[];
 
 // ===== SEND TELEGRAM =====
+// ===== FORMAT =====
+string FormatMsg(string action, string symbol, string side,
+                 double volume, double entry, double sl, double tp, string rr)
+{
+   string msg;
+   msg = "=== " + AccountName + " ===\n";
+   msg = "=== " + action + " " + side + " " + symbol + " ===\n";
+   msg += "Volume: " + DoubleToString(volume, 2) + " lot\n";
+   msg += "Entry: " + DoubleToString(entry, _Digits) + "\n";
+   msg += "SL: " + DoubleToString(sl, _Digits) + "\n";
+   msg += "TP: " + DoubleToString(tp, _Digits) + "\n";
+   msg += "RR: " + rr;
+   return msg;
+}
+
 void SendTelegramMessage(string text)
 {
    string url = "https://api.telegram.org/bot" + BotToken + "/sendMessage";
@@ -270,9 +287,15 @@ void CheckEntry()
       double sl = entry - sl_dist;
       double tp = entry + tp_dist;
 
-      double sl_p, tp_p;
+      // Tính RR thực tế
+    double risk      = MathAbs(entry - sl);
+    double reward    = MathAbs(tp - entry);
+    double rr_actual = DoubleToString(reward / risk, 2);
 
-        // Buy lot, _Symbol, entry, sl, tp
+        // ORDER Buy lot, _Symbol, entry, sl, tp
+    string side = "BUY";
+    string msg = FormatMsg("BUY", _Symbol, side, lot, entry, sl, tp, rr_actual);
+    SendTelegramMessage(msg);
    }
 
    // ===== SELL =====
@@ -299,15 +322,25 @@ void CheckEntry()
       double sl = entry + sl_dist;
       double tp = entry - tp_dist;
 
-      double sl_p, tp_p;
+     double risk      = MathAbs(entry - sl);
+     double reward    = MathAbs(tp - entry);
+     double rr_actual = DoubleToString(reward / risk, 2);
 
-        // Sell lot, _Symbol, entry, sl, tp
+        // ORDER Sell lot, _Symbol, entry, sl, tp
+    string side = "SELL";
+    string msg = FormatMsg("SELL", _Symbol, side, lot, entry, sl, tp, rr_actual);
+    SendTelegramMessage(msg);
    }
 }
 
 // ===== INIT =====
 int OnInit()
 {
+   EventSetTimer(60); // gọi OnTimer mỗi 60 giây
+
+   // ghi ngay lần đầu
+   GlobalVariableSet(HEARTBEAT_NAME, (double)TimeCurrent());
+   
    atrHandle =
       iATR(_Symbol,_Period,ATR_Period);
 
@@ -319,6 +352,10 @@ int OnInit()
 
    if(rsiHandle == INVALID_HANDLE)
       return INIT_FAILED;
+
+    string msg = FormatMsg("Buy Test", "XAUUSD", "BUY", 0.01, 4000, 3900, 4200, 2);
+    SendTelegramMessage(msg);
+ 
 
    return INIT_SUCCEEDED;
 }
@@ -341,11 +378,18 @@ void OnTick()
    ManageBreakEven();
 }
 
+
+void OnTimer()
+{
+   GlobalVariableSet(HEARTBEAT_NAME, (double)TimeCurrent());
+}
+
 void OnDeinit(const int reason)
 {
-   if(atrHandle != INVALID_HANDLE)
+    if(atrHandle != INVALID_HANDLE)
       IndicatorRelease(atrHandle);
 
    if(rsiHandle != INVALID_HANDLE)
       IndicatorRelease(rsiHandle);
+   EventKillTimer();
 }
