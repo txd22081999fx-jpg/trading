@@ -24,6 +24,11 @@ input double RSI_Oversold = 30.0;
 // ===== BE =====
 input double BE_Trigger = 0.7;
 
+// ===== Telegram credential =====
+input string BotToken = "";
+input string ChatID   = "";
+input string AccountName = "";
+
 // ===== GLOBAL =====
 int atrHandle;
 int rsiHandle;
@@ -31,6 +36,22 @@ int rsiHandle;
 double atrBuffer[];
 double rsiBuffer[];
 
+// ===== SEND TELEGRAM =====
+void SendTelegramMessage(string text)
+{
+   string url = "https://api.telegram.org/bot" + BotToken + "/sendMessage";
+
+   string headers;
+   char post[];
+   string data = "chat_id=" + ChatID + "&text=" + AccountName + "\n" + text;
+   StringToCharArray(data, post);
+
+   char result[];
+   int res = WebRequest("POST", url, "", 5000, post, result, headers);
+
+   if(res == -1)
+      Print("Send failed: ", GetLastError());
+}
 
 // ===== ATR =====
 double GetATR(int shift=1)
@@ -279,7 +300,7 @@ void CheckEntry()
       double tp = entry - tp_dist;
 
       double sl_p, tp_p;
-      
+
         // Sell lot, _Symbol, entry, sl, tp
    }
 }
