@@ -254,27 +254,6 @@ void CheckEntry()
       double sl = entry - sl_dist;
       double tp = entry + tp_dist;
 
-      double sl_p, tp_p;
-
-      OrderCalcProfit(
-         ORDER_TYPE_BUY,
-         _Symbol,
-         lot,
-         entry,
-         sl,
-         sl_p
-      );
-
-      OrderCalcProfit(
-         ORDER_TYPE_BUY,
-         _Symbol,
-         lot,
-         entry,
-         tp,
-         tp_p
-      );
-
-
       trade.Buy(
          lot,
          _Symbol,
@@ -307,27 +286,6 @@ void CheckEntry()
 
       double sl = entry + sl_dist;
       double tp = entry - tp_dist;
-
-      double sl_p, tp_p;
-
-      OrderCalcProfit(
-         ORDER_TYPE_SELL,
-         _Symbol,
-         lot,
-         entry,
-         sl,
-         sl_p
-      );
-
-      OrderCalcProfit(
-         ORDER_TYPE_SELL,
-         _Symbol,
-         lot,
-         entry,
-         tp,
-         tp_p
-      );
-
 
       trade.Sell(
          lot,
