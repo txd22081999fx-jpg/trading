@@ -1,5 +1,4 @@
 #include <Trade/Trade.mqh>
-CTrade trade;
 
 // ===== INPUT =====
 input double RiskUSD = 100.0;
@@ -195,12 +194,8 @@ void ManageBreakEven()
          return;
 
       double new_sl = entry;
-      
-      trade.PositionModify(
-         _Symbol,
-         new_sl,
-         tp
-      );
+
+      // Modify _Symbol, new_sl, tp
    }
 }
 
@@ -256,32 +251,7 @@ void CheckEntry()
 
       double sl_p, tp_p;
 
-      OrderCalcProfit(
-         ORDER_TYPE_BUY,
-         _Symbol,
-         lot,
-         entry,
-         sl,
-         sl_p
-      );
-
-      OrderCalcProfit(
-         ORDER_TYPE_BUY,
-         _Symbol,
-         lot,
-         entry,
-         tp,
-         tp_p
-      );
-
-
-      trade.Buy(
-         lot,
-         _Symbol,
-         entry,
-         sl,
-         tp
-      );
+        // Buy lot, _Symbol, entry, sl, tp
    }
 
    // ===== SELL =====
@@ -309,33 +279,8 @@ void CheckEntry()
       double tp = entry - tp_dist;
 
       double sl_p, tp_p;
-
-      OrderCalcProfit(
-         ORDER_TYPE_SELL,
-         _Symbol,
-         lot,
-         entry,
-         sl,
-         sl_p
-      );
-
-      OrderCalcProfit(
-         ORDER_TYPE_SELL,
-         _Symbol,
-         lot,
-         entry,
-         tp,
-         tp_p
-      );
-
-
-      trade.Sell(
-         lot,
-         _Symbol,
-         entry,
-         sl,
-         tp
-      );
+      
+        // Sell lot, _Symbol, entry, sl, tp
    }
 }
 
